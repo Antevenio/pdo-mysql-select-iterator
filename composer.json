@@ -7,5 +7,8 @@
             "name": "Iván Mota Alberca",
             "email": "pinfake@hotmail.com"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {"PdoMysqlSelectIterator\\": "src/"}
+    }
 }
