@@ -1,0 +1,11 @@
+{
+    "name": "antevenio/pdo-mysql-select-iterator",
+    "description": "Given a mysql pdo connection and a \"select\" query, it will return an iterator for results which internally will perform several \"select\" queries on the database using limit clauses to fetch results by blocks.",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Iván Mota Alberca",
+            "email": "pinfake@hotmail.com"
+        }
+    ]
+}
