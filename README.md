@@ -1,7 +1,5 @@
 # pdo-mysql-select-iterator
 [![Build Status](https://travis-ci.org/Antevenio/pdo-mysql-select-iterator.svg?branch=master)](https://travis-ci.org/Antevenio/pdo-mysql-select-iterator)
-[![Latest stable][ico-version-stable]][link-packagist]
-[![Latest development][ico-version-dev]][link-packagist]
 
 PHP PDO Mysql select statement iterator implemented as multiple queries using LIMIT clauses.
 
