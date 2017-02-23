@@ -4,6 +4,9 @@ use PHPUnit\Framework\TestCase;
 
 class IteratorTest extends TestCase
 {
+    const NOT_COUNTING = 0;
+    const COUNTING = 1;
+
     protected $query;
     /**
      * @var \PDO | \PHPUnit_Framework_MockObject_MockObject
@@ -26,9 +29,15 @@ class IteratorTest extends TestCase
         $this->sut = new Iterator($this->pdo, $this->query, $this->blockSize);
     }
 
-    protected function setPdoQueryExpectations($queryParams)
+    protected function setPdoQueryExpectations(
+        $queryParams, $type = self::NOT_COUNTING, $returnedCount = 0
+    )
     {
         $j = 0;
+        $selectString = "SELECT";
+        if ($type == self::COUNTING) {
+            $selectString = "SELECT SQL_CALC_FOUND_ROWS";
+        }
         foreach($queryParams as $params) {
             $blockSize = $params[0];
             $offset = $params[1];
@@ -39,13 +48,26 @@ class IteratorTest extends TestCase
             $this->pdo->expects($this->at($j++))
                 ->method("query")
                 ->with($this->equalTo(
-                    "SELECT * FROM TABLE LIMIT $blockSize OFFSET $offset"))
+                    "$selectString * FROM TABLE LIMIT $blockSize OFFSET $offset"))
                 ->will($this->returnValue($pdoStatement));
 
             $pdoStatement->expects($this->once())
                 ->method("fetchAll")
                 ->with($this->equalTo(\PDO::FETCH_ASSOC))
                 ->will($this->returnValue($returnedData));
+        }
+        if ($type == self::COUNTING) {
+            $pdoStatement = $this->createMock(PDOStatement::class);
+            $this->pdo->expects($this->at($j))
+                ->method("query")
+                ->with($this->equalTo(
+                    "SELECT FOUND_ROWS() AS FOUND_ROWS"))
+                ->will($this->returnValue($pdoStatement));
+
+            $pdoStatement->expects($this->once())
+                ->method("fetch")
+                ->with($this->equalTo(\PDO::FETCH_ASSOC))
+                ->will($this->returnValue(["FOUND_ROWS" => $returnedCount]));
         }
     }
 
@@ -225,5 +247,22 @@ class IteratorTest extends TestCase
         $this->sut->rewind();
         $this->sut->next();
         $this->assertFalse($this->sut->valid());
+    }
+
+    public function testConstructorShouldThrowExcepcionOnInvalidQuery()
+    {
+        $this->expectException(\PdoMysqlSelectIterator\Exception\InvalidQueryException::class);
+        new Iterator($this->pdo, "I AM NOT A SELECT", $this->blockSize);
+    }
+
+    public function testCount()
+    {
+        $this->setPdoQueryExpectations(
+            [
+                [3, 0, [
+                    ["a" => "a1", "b" => "b1"]]]
+            ], self::COUNTING, 99
+        );
+        $this->assertEquals(99, $this->sut->count());
     }
 }
