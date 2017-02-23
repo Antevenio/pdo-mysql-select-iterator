@@ -33,14 +33,6 @@ class IteratorTest extends TestCase
             $blockSize = $params[0];
             $offset = $params[1];
             $returnedData = $params[2];
-            $this->pdo->expects($this->at($j++))
-                ->method("quote")
-                ->with($this->equalTo($blockSize), $this->equalTo(\PDO::PARAM_INT))
-                ->will($this->returnValue($blockSize));
-            $this->pdo->expects($this->at($j++))
-                ->method("quote")
-                ->with($this->equalTo($offset), $this->equalTo(\PDO::PARAM_INT))
-                ->will($this->returnValue($offset));
 
             $pdoStatement = $this->createMock(PDOStatement::class);
 

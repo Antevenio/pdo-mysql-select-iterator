@@ -62,11 +62,7 @@ class Iterator implements \Iterator
     protected function getCurrentBlockQuery()
     {
         return (
-            $this->query .
-            " LIMIT " .
-            $this->pdo->quote($this->blockSize,\PDO::PARAM_INT) .
-            " OFFSET " .
-            $this->pdo->quote($this->absoluteIndex, \PDO::PARAM_INT)
+            $this->query . " LIMIT " . $this->blockSize . " OFFSET " .  $this->absoluteIndex
         );
     }
 
