@@ -44,6 +44,7 @@ class IteratorTest extends TestCase
 
             $pdoStatement->expects($this->once())
                 ->method("fetchAll")
+                ->with($this->equalTo(\PDO::FETCH_ASSOC))
                 ->will($this->returnValue($returnedData));
         }
     }

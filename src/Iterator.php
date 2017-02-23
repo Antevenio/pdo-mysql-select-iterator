@@ -49,7 +49,7 @@ class Iterator implements \Iterator
         $this->absoluteIndex++;
         $this->currentBlockIndex++;
         if ($this->endOfBlockReached()) {
-            $this->results = $this->pdo->query($this->getCurrentBlockQuery())->fetchAll();
+            $this->fetchBlock();
             $this->currentBlockIndex = 0;
         }
     }
@@ -57,6 +57,12 @@ class Iterator implements \Iterator
     protected function endOfBlockReached()
     {
         return ($this->currentBlockIndex == ($this->blockSize));
+    }
+
+    protected function fetchBlock()
+    {
+        $this->results = $this->pdo->query($this->getCurrentBlockQuery())
+            ->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     protected function getCurrentBlockQuery()
@@ -81,7 +87,7 @@ class Iterator implements \Iterator
         if ($this->results == null || $this->absoluteIndex >= $this->blockSize) {
             $this->absoluteIndex = 0;
             $this->currentBlockIndex = 0;
-            $this->results = $this->pdo->query($this->getCurrentBlockQuery())->fetchAll();
+            $this->fetchBlock();
         } else {
             $this->absoluteIndex = 0;
             $this->currentBlockIndex = 0;
