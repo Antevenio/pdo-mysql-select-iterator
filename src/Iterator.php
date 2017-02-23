@@ -48,11 +48,11 @@ class Iterator implements \Iterator, \Countable
     public function __construct(\PDO $pdo, $query, $blockSize = self::BLOCK_SIZE)
     {
         $this->assertValidQuery($query);
+        $this->resetAbsoluteIndex();
+        $this->resetBlockIndex();
         $this->pdo = $pdo;
         $this->query = $query;
         $this->blockSize = $blockSize;
-        $this->currentBlockIndex = 0;
-        $this->absoluteIndex = 0;
         $this->results = null;
         $this->rowCount = null;
     }
@@ -69,6 +69,16 @@ class Iterator implements \Iterator, \Countable
     protected function isAValidSelect($query)
     {
         return (preg_match('/^\s*SELECT\s+/i',$query));
+    }
+
+    protected function resetAbsoluteIndex()
+    {
+        $this->absoluteIndex = 0;
+    }
+
+    protected function resetBlockIndex()
+    {
+        $this->currentBlockIndex = 0;
     }
 
     public function next()
@@ -111,11 +121,6 @@ class Iterator implements \Iterator, \Countable
         return ($query);
     }
 
-    protected function resetBlockIndex()
-    {
-        $this->currentBlockIndex = 0;
-    }
-
     public function key()
     {
         return ($this->absoluteIndex);
@@ -138,11 +143,6 @@ class Iterator implements \Iterator, \Countable
     protected function onFirstBlock()
     {
         return ($this->absoluteIndex < $this->blockSize);
-    }
-
-    protected function resetAbsoluteIndex()
-    {
-        $this->absoluteIndex = 0;
     }
 
     protected function blockLoaded()
