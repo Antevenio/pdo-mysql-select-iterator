@@ -38,7 +38,7 @@ class Iterator implements \Iterator, \Countable
     /**
      * @var int
      */
-    protected $totalRows;
+    protected $rowCount;
 
     /**
      * @var array
@@ -54,7 +54,7 @@ class Iterator implements \Iterator, \Countable
         $this->currentBlockIndex = 0;
         $this->absoluteIndex = 0;
         $this->results = null;
-        $this->totalRows = null;
+        $this->rowCount = null;
     }
 
     protected function assertValidQuery($query)
@@ -73,12 +73,21 @@ class Iterator implements \Iterator, \Countable
 
     public function next()
     {
-        $this->absoluteIndex++;
-        $this->currentBlockIndex++;
+        $this->incrementAbsoluteIndex();
+        $this->incrementBlockIndex();
         if ($this->endOfBlockReached()) {
-            $this->fetchBlock();
-            $this->currentBlockIndex = 0;
+            $this->loadNextBlock();
         }
+    }
+
+    protected function incrementAbsoluteIndex()
+    {
+        $this->absoluteIndex++;
+    }
+
+    protected function incrementBlockIndex()
+    {
+        $this->currentBlockIndex++;
     }
 
     protected function endOfBlockReached()
@@ -86,10 +95,11 @@ class Iterator implements \Iterator, \Countable
         return ($this->currentBlockIndex == ($this->blockSize));
     }
 
-    protected function fetchBlock($type = self::_NOT_COUNTING)
+    protected function loadNextBlock($type = self::_NOT_COUNTING)
     {
         $this->results = $this->pdo->query($this->getCurrentBlockQuery($type))
             ->fetchAll(\PDO::FETCH_ASSOC);
+        $this->resetBlockIndex();
     }
 
     protected function getCurrentBlockQuery($type = self::_COUNTING)
@@ -99,6 +109,11 @@ class Iterator implements \Iterator, \Countable
             $query = preg_replace("/SELECT/i", "SELECT SQL_CALC_FOUND_ROWS", $query);
         }
         return ($query);
+    }
+
+    protected function resetBlockIndex()
+    {
+        $this->currentBlockIndex = 0;
     }
 
     public function key()
@@ -113,29 +128,56 @@ class Iterator implements \Iterator, \Countable
 
     public function rewind()
     {
-        if ($this->results == null || $this->absoluteIndex >= $this->blockSize) {
-            $this->absoluteIndex = 0;
-            $this->currentBlockIndex = 0;
-            $this->fetchBlock();
-        } else {
-            $this->absoluteIndex = 0;
-            $this->currentBlockIndex = 0;
+        $onFirstBlock = $this->onFirstBlock();
+        $this->resetAbsoluteIndex();
+        if (!$this->blockLoaded() || !$onFirstBlock) {
+            $this->loadNextBlock();
         }
+    }
+
+    protected function onFirstBlock()
+    {
+        return ($this->absoluteIndex < $this->blockSize);
+    }
+
+    protected function resetAbsoluteIndex()
+    {
+        $this->absoluteIndex = 0;
+    }
+
+    protected function blockLoaded()
+    {
+        return ($this->results != null);
     }
 
     public function valid()
     {
-        return ($this->results != null && isset($this->results[$this->currentBlockIndex]));
+        return ($this->blockLoaded() && $this->currentRowExists());
+    }
+
+    protected function currentRowExists()
+    {
+        return (isset($this->results[$this->currentBlockIndex]));
     }
 
     public function count()
     {
-        if ($this->totalRows === null) {
-            $this->fetchBlock(self::_COUNTING);
-            $row = $this->pdo->query("SELECT FOUND_ROWS() AS FOUND_ROWS")
-                ->fetch(\PDO::FETCH_ASSOC);
-            $this->totalRows = $row['FOUND_ROWS'];
+        if (!$this->countDone()) {
+            $this->loadNextBlock(self::_COUNTING);
+            $this->loadCount();
         }
-        return ($this->totalRows);
+        return ($this->rowCount);
+    }
+
+    protected function countDone()
+    {
+        return ($this->rowCount !== null);
+    }
+
+    protected function loadCount()
+    {
+        $row = $this->pdo->query("SELECT FOUND_ROWS() AS FOUND_ROWS")
+            ->fetch(\PDO::FETCH_ASSOC);
+        $this->rowCount = $row['FOUND_ROWS'];
     }
 }
