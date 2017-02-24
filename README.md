@@ -39,3 +39,10 @@ foreach ($iterator as $item) {
     // Do your stuff with $item
 }
 ```
+Notes
+---
+To ensure consistency among results, you might want to get the whole iteration and count inside a database transaction.
+The most suitable isolation level would be REPEATABLE-READ: https://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-isolation-levels.html#isolevel_repeatable-read
+
+
+
