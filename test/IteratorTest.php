@@ -21,6 +21,24 @@ class IteratorTest extends TestCase
      */
     protected $blockSize;
 
+    const DATA_BLOCKS = [
+        [
+            ["a" => "a1", "b" => "b1"],
+            ["a" => "a2", "b" => "b2"],
+            ["a" => "a3", "b" => "b3"]
+        ],
+        [
+            ["a" => "a4", "b" => "b4"],
+            ["a" => "a5", "b" => "b5"],
+            ["a" => "a6", "b" => "b6"]
+        ],
+        [
+            ["a" => "a7", "b" => "b7"],
+            ["a" => "a8", "b" => "b8"],
+            ["a" => "a9", "b" => "b9"]
+        ]
+    ];
+
     public function setUp()
     {
         $this->query = "SELECT * FROM TABLE";
@@ -75,10 +93,7 @@ class IteratorTest extends TestCase
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]],
+                [3, 0, self::DATA_BLOCKS[0]],
             ]
         );
         $this->sut->rewind();
@@ -88,10 +103,7 @@ class IteratorTest extends TestCase
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]],
+                [3, 0, self::DATA_BLOCKS[0]],
             ]
         );
         $this->sut->rewind();
@@ -104,18 +116,9 @@ class IteratorTest extends TestCase
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]],
-                [3, 3, [
-                    ["a" => "a4", "b" => "b4"],
-                    ["a" => "a5", "b" => "b5"],
-                    ["a" => "a6", "b" => "b6"]]],
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]]
+                [3, 0, self::DATA_BLOCKS[0]],
+                [3, 3, self::DATA_BLOCKS[1]],
+                [3, 0, self::DATA_BLOCKS[0]]
             ]
         );
         $this->sut->rewind();
@@ -129,18 +132,9 @@ class IteratorTest extends TestCase
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]],
-                [3, 3, [
-                    ["a" => "a4", "b" => "b4"],
-                    ["a" => "a5", "b" => "b5"],
-                    ["a" => "a6", "b" => "b6"]]],
-                [3, 6, [
-                    ["a" => "a7", "b" => "b7"],
-                    ["a" => "a8", "b" => "b8"],
-                    ["a" => "a9", "b" => "b9"]]]
+                [3, 0, self::DATA_BLOCKS[0]],
+                [3, 3, self::DATA_BLOCKS[1]],
+                [3, 6, self::DATA_BLOCKS[2]]
             ]
         );
         $this->sut->rewind();
@@ -154,14 +148,8 @@ class IteratorTest extends TestCase
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]],
-                [3, 3, [
-                    ["a" => "a4", "b" => "b4"],
-                    ["a" => "a5", "b" => "b5"],
-                    ["a" => "a6", "b" => "b6"]]]
+                [3, 0, self::DATA_BLOCKS[0]],
+                [3, 3, self::DATA_BLOCKS[1]]
             ]
         );
         $this->sut->rewind();
@@ -175,15 +163,13 @@ class IteratorTest extends TestCase
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]]
+                [3, 0, self::DATA_BLOCKS[0]]
             ]
         );
         $this->sut->rewind();
         $this->assertEquals(0, $this->sut->key());
         $this->sut->next();
+        $this->assertEquals(1, $this->sut->key());
         $this->sut->rewind();
         $this->assertEquals(0, $this->sut->key());
     }
@@ -192,18 +178,9 @@ class IteratorTest extends TestCase
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]],
-                [3, 3, [
-                    ["a" => "a4", "b" => "b4"],
-                    ["a" => "a5", "b" => "b5"],
-                    ["a" => "a6", "b" => "b6"]]],
-                [3, 6, [
-                    ["a" => "a7", "b" => "b7"],
-                    ["a" => "a8", "b" => "b8"],
-                    ["a" => "a9", "b" => "b9"]]]
+                [3, 0, self::DATA_BLOCKS[0]],
+                [3, 3, self::DATA_BLOCKS[1]],
+                [3, 6, self::DATA_BLOCKS[2]]
             ]
         );
         $this->sut->rewind();
@@ -215,18 +192,12 @@ class IteratorTest extends TestCase
         }
     }
 
-    public function testValidShouldReturnTrueWhenRowExists()
+    public function testValidShouldReturnTrueWhenCurrentRowExists()
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"],
-                    ["a" => "a2", "b" => "b2"],
-                    ["a" => "a3", "b" => "b3"]]],
-                [3, 3, [
-                    ["a" => "a4", "b" => "b4"],
-                    ["a" => "a5", "b" => "b5"],
-                    ["a" => "a6", "b" => "b6"]]],
+                [3, 0, self::DATA_BLOCKS[0]],
+                [3, 3, self::DATA_BLOCKS[1]]
             ]
         );
         $this->sut->rewind();
@@ -236,12 +207,11 @@ class IteratorTest extends TestCase
         }
     }
 
-    public function testValidShouldReturnFalseWhenRowDoesntExist()
+    public function testValidShouldReturnFalseWhenCurrentRowDoesntExist()
     {
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"]]]
+                [3, 0, [self::DATA_BLOCKS[0][0]]]
             ]
         );
         $this->sut->rewind();
@@ -255,14 +225,28 @@ class IteratorTest extends TestCase
         new Iterator($this->pdo, "I AM NOT A SELECT", $this->blockSize);
     }
 
-    public function testCount()
+    public function testCountShouldCount()
     {
+        $numRows = 99;
         $this->setPdoQueryExpectations(
             [
-                [3, 0, [
-                    ["a" => "a1", "b" => "b1"]]]
-            ], self::COUNTING, 99
+                [3, 0, self::DATA_BLOCKS[0]]
+            ], self::COUNTING, $numRows
         );
-        $this->assertEquals(99, $this->sut->count());
+        $this->assertEquals($numRows, $this->sut->count());
+    }
+
+    public function testCountShouldNotCountIfAlreadyDid()
+    {
+        $numRows = 99;
+        $this->setPdoQueryExpectations(
+            [
+                [3, 0, self::DATA_BLOCKS[0]]
+            ], self::COUNTING, $numRows
+        );
+        $this->assertEquals($numRows, $this->sut->count());
+        $this->pdo->expects($this->never())
+            ->method("query");
+        $this->assertEquals($numRows, $this->sut->count());
     }
 }
