@@ -11,12 +11,12 @@ What is this thing
 So, you want to iterate through millions of table rows comming as a result
 of some MySQL select query because you want to do your thingie with them, but alas!, your lovely
 database admin doesn't like queries that stay for too long running in his server,
-or even the server itself isn't able to hold them. What do we do?, we do issue several
+or even worse, the server itself isn't able to hold them!. What do we do?, we do issue several
 queries that would fetch smaller blocks of rows in place.
 
 
 This is an just a PHP iterator based on this concept. Upon receiving a SELECT query and a
-PDO database connection, an iterator is built so you can seamlesly traverse it wihtout
+PDO database connection, an iterator is built so you can seamlesly traverse all results without
 having to worry about anything else.
 
 Install
@@ -39,10 +39,10 @@ foreach ($iterator as $item) {
     // Do your stuff with $item
 }
 ```
+
 Notes
 ---
 To ensure consistency among results, you might want to get the whole iteration and count inside a database transaction.
-The most suitable isolation level would be REPEATABLE-READ: https://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-isolation-levels.html#isolevel_repeatable-read
+The most suitable isolation level would be REPEATABLE-READ: 
 
-
-
+https://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-isolation-levels.html#isolevel_repeatable-read
