@@ -16,7 +16,7 @@ queries that would fetch smaller blocks of rows in place.
 
 
 This is an just a PHP iterator based on this concept. Upon receiving a SELECT query and a
-PDO database connection, an iterator is built so you can seamlesly traverse all results without
+PDO database connection, an iterator is built so you can seamlessly traverse results without
 having to worry about anything else.
 
 Install
