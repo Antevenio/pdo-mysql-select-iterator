@@ -3,6 +3,7 @@
 [![Total Downloads](https://poser.pugx.org/antevenio/pdo-mysql-select-iterator/downloads)](https://packagist.org/packages/antevenio/pdo-mysql-select-iterator)
 [![License](https://poser.pugx.org/antevenio/pdo-mysql-select-iterator/license)](https://packagist.org/packages/antevenio/pdo-mysql-select-iterator)
 [![Build Status](https://travis-ci.org/Antevenio/pdo-mysql-select-iterator.svg?branch=master)](https://travis-ci.org/Antevenio/pdo-mysql-select-iterator)
+[![Code Climate](https://codeclimate.com/github/Antevenio/pdo-mysql-select-iterator.png)](https://codeclimate.com/github/Antevenio/pdo-mysql-select-iterator)
 
 PHP PDO Mysql select statement iterator implemented as multiple queries using LIMIT clauses.
 
