@@ -9,7 +9,7 @@ PHP PDO Mysql select statement iterator implemented as multiple queries using LI
 
 What is this thing
 ---
-So, you want to iterate through millions of table rows comming as a result
+So, you want to iterate through millions of table rows coming as a result
 of some MySQL select query because you want to do your thingie with them, but alas!, your lovely
 database admin doesn't like queries that stay for too long running in his server,
 or even worse, the server itself isn't able to hold them!. What do we do?, we do issue several
