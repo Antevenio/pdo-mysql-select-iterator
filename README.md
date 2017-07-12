@@ -33,7 +33,7 @@ Usage example
 ```php
 <?php
 $pdo = new PDO('mysql:host=localhost;dbname=kidsshouting', 'myuser', 'mypass');
-$iterator = new \PdoMysqlSelectIterator\Iterator($pdo, "select * from tbl", 1000);
+$iterator = new \PdoMysqlSelectIterator\LimitIterator($pdo, "select * from tbl", 1000);
 // Get a total row count from the query if needed
 $total = count($iterator);
 foreach ($iterator as $item) {

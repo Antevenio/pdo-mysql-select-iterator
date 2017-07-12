@@ -1,5 +1,5 @@
 <?php
-use PdoMysqlSelectIterator\Iterator;
+use PdoMysqlSelectIterator\LimitIterator;
 use PHPUnit\Framework\TestCase;
 
 class IteratorTest extends TestCase
@@ -13,7 +13,7 @@ class IteratorTest extends TestCase
      */
     protected $pdo;
     /**
-     * @var Iterator
+     * @var LimitIterator
      */
     protected $sut;
     /**
@@ -44,7 +44,7 @@ class IteratorTest extends TestCase
         $this->query = "SELECT * FROM TABLE";
         $this->pdo = $this->createMock(\PDO::class);
         $this->blockSize = 3;
-        $this->sut = new Iterator($this->pdo, $this->query, $this->blockSize);
+        $this->sut = new LimitIterator($this->pdo, $this->query, $this->blockSize);
     }
 
     protected function setPdoQueryExpectations(
@@ -222,7 +222,7 @@ class IteratorTest extends TestCase
     public function testConstructorShouldThrowExcepcionOnInvalidQuery()
     {
         $this->expectException(\PdoMysqlSelectIterator\Exception\InvalidQueryException::class);
-        new Iterator($this->pdo, "I AM NOT A SELECT", $this->blockSize);
+        new LimitIterator($this->pdo, "I AM NOT A SELECT", $this->blockSize);
     }
 
     public function testCountShouldCount()
