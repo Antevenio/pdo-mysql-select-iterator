@@ -34,6 +34,6 @@ class Factory {
 
     protected function queryHasARandFunction($query)
     {
-        return (preg_match('/RAND(.*)/i', $query));
+        return (preg_match('/RAND\(.*\)/i', $query));
     }
 }
