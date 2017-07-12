@@ -118,7 +118,6 @@ class LimitIterator implements \Iterator, Iterator
         if ($type == self::_COUNTING) {
             $query = preg_replace("/SELECT/i", "SELECT SQL_CALC_FOUND_ROWS", $query);
         }
-        error_log($query);
         return ($query);
     }
 
