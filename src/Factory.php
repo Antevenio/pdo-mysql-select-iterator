@@ -13,6 +13,7 @@ class Factory {
         if ($this->queryIsLimitable($query)) {
             return new LimitIterator($adapter, $query, $blockSize);
         } else {
+            $adapter->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
             $adapter->setAttribute(
                 \PDO::ATTR_STATEMENT_CLASS,
                 [NativePDOIterator::class, [$adapter]]
