@@ -14,7 +14,6 @@ class Factory {
             return new LimitIterator($adapter, $query, $blockSize);
         } else {
             $adapter->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
-            $adapter->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
             $adapter->setAttribute(
                 \PDO::ATTR_STATEMENT_CLASS,
                 [NativePDOIterator::class, [$adapter]]
