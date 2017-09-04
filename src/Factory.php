@@ -10,7 +10,7 @@ class Factory {
      */
     public function create(\PDO $adapter, $query, $blockSize)
     {
-        if ($this->queryIsLimitable($query)) {
+        if ($this->queryIsLimitable($query) || $blockSize == 0) {
             return new LimitIterator($adapter, $query, $blockSize);
         } else {
             $adapter->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
