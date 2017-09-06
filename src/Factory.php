@@ -10,7 +10,7 @@ class Factory {
      */
     public function create(\PDO $adapter, $query, $blockSize)
     {
-        if ($this->queryIsLimitable($query) || $blockSize == 0) {
+        if ($this->queryIsLimitable($query) && $blockSize > 0) {
             return new LimitIterator($adapter, $query, $blockSize);
         } else {
             $adapter->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
@@ -25,7 +25,9 @@ class Factory {
     }
 
     protected function queryIsLimitable($query) {
-        return !$this->queryHasALimitClause($query) && !$this->queryHasARandFunction($query);
+        return !$this->queryHasALimitClause($query)
+            && !$this->queryHasARandFunction($query)
+            && $this->queryHasOrderByClause($query);
     }
 
     protected function queryHasALimitClause($query)
@@ -36,5 +38,10 @@ class Factory {
     protected function queryHasARandFunction($query)
     {
         return (preg_match('/RAND\(.*\)/i', $query));
+    }
+
+    protected function queryHasOrderByClause($query)
+    {
+        return (preg_match('/ORDER BY/i', $query));
     }
 }
