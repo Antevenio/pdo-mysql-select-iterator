@@ -33,7 +33,8 @@ Usage example
 ```php
 <?php
 $pdo = new PDO('mysql:host=localhost;dbname=kidsshouting', 'myuser', 'mypass');
-$iterator = (new \PdoMysqlSelectIterator\Factory())->create($pdo, "select * from tbl", 1000);
+$iterator = (new \PdoMysqlSelectIterator\Factory())
+    ->create($pdo, "select a,b from tbl order by a", 1000);
 // Get a total row count from the query if needed
 $total = count($iterator);
 foreach ($iterator as $item) {
@@ -43,6 +44,17 @@ foreach ($iterator as $item) {
 
 Notes
 ---
+The library will throw a InvalidQueryException on non "select" queries.
+
+The library will only return a LimitIterator when:
+* The blockSize is > 0
+* The query has an "order by" clause
+* The query is not using any "rand()" functions
+* The query doesn't already have a "limit" clause.
+
+If any of the previous conditions exist, it will return a non limit based iterator called 
+"NativePDOIterator". 
+
 To ensure consistency among results, you might want to get the whole iteration and count inside a database transaction.
 The most suitable isolation level would be REPEATABLE-READ: 
 
