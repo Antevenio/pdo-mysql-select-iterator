@@ -12,16 +12,15 @@ class Factory {
     {
         if ($this->queryIsLimitable($query) && $blockSize > 0) {
             return new LimitIterator($adapter, $query, $blockSize);
-        } else {
-            $adapter->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
-            $adapter->setAttribute(
-                \PDO::ATTR_STATEMENT_CLASS,
-                [NativePDOIterator::class, [$adapter]]
-            );
-            /** @var Iterator $statement */
-            $statement = $adapter->query($query);
-            return $statement;
         }
+        $adapter->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
+        $adapter->setAttribute(
+            \PDO::ATTR_STATEMENT_CLASS,
+            [NativePDOIterator::class, [$adapter]]
+        );
+        /** @var Iterator $statement */
+        $statement = $adapter->query($query);
+        return $statement;
     }
 
     protected function queryIsLimitable($query) {
