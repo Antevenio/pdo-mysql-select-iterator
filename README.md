@@ -44,15 +44,15 @@ foreach ($iterator as $item) {
 
 Notes
 ---
-The library will throw a InvalidQueryException on non "select" queries.
+The factory will throw a InvalidQueryException on non "select" queries.
 
-The library will only return a LimitIterator when:
+The factory will only return a LimitIterator when:
 * The blockSize is > 0
 * The query has an "order by" clause
 * The query is not using any "rand()" functions
 * The query doesn't already have a "limit" clause.
 
-If any of the previous conditions exist, it will return a non limit based iterator called 
+If any of the previous conditions are met, the factory will return a non limit based iterator called 
 "NativePDOIterator". 
 
 To ensure consistency among results, you might want to get the whole iteration and count inside a database transaction.
