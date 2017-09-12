@@ -14,4 +14,10 @@ class NativePDOIterator extends \PDOStatement implements Iterator
     {
         return $this->rowCount();
     }
+
+    public function close()
+    {
+        parent::closeCursor();
+        $this->pdo = null;
+    }
 }

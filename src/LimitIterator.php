@@ -180,4 +180,9 @@ class LimitIterator implements \Iterator, Iterator
             ->fetch(\PDO::FETCH_ASSOC);
         $this->rowCount = $row['FOUND_ROWS'];
     }
+
+    public function close()
+    {
+        $this->pdo = null;
+    }
 }
