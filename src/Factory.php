@@ -16,7 +16,7 @@ class Factory {
         $adapter->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
         $adapter->setAttribute(
             \PDO::ATTR_STATEMENT_CLASS,
-            [NativePDOIterator::class, [$adapter]]
+            [NativePDOIterator::class, []]
         );
         /** @var Iterator $statement */
         $statement = $adapter->query($query);

@@ -4,10 +4,8 @@ namespace PdoMysqlSelectIterator;
 
 class NativePDOIterator extends \PDOStatement implements Iterator
 {
-    protected $pdo;
-
-    protected function __construct($pdo) {
-        $this->pdo = $pdo;
+    protected function __construct()
+    {
     }
 
     public function count()
@@ -18,6 +16,5 @@ class NativePDOIterator extends \PDOStatement implements Iterator
     public function close()
     {
         parent::closeCursor();
-        $this->pdo = null;
     }
 }
