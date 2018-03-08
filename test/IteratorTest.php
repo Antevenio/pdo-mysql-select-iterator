@@ -1,5 +1,8 @@
 <?php
+namespace PdoMysqlSelectIterator\Test;
+
 use PdoMysqlSelectIterator\LimitIterator;
+use PDOStatement;
 use PHPUnit\Framework\TestCase;
 
 class IteratorTest extends TestCase
@@ -187,6 +190,24 @@ class IteratorTest extends TestCase
         for ($i = 0; $i < 8; $i++) {
             $this->assertEquals(
                 ["a" => "a".($i+1), "b" => "b".($i+1)], $this->sut->current()
+            );
+            $this->sut->next();
+        }
+    }
+
+    public function testCurrentShouldReturnAnHydratedRowClassIfDefined()
+    {
+        $this->sut->setRowClass(TestRow::class);
+        $this->setPdoQueryExpectations(
+            [
+                [3, 0, self::DATA_BLOCKS[0]],
+                [3, 3, self::DATA_BLOCKS[1]]
+            ]
+        );
+        $this->sut->rewind();
+        for ($i = 0; $i < 3; $i++) {
+            $this->assertEquals(
+                ["a" => "a".($i+1), "b" => "b".($i+1)], $this->sut->current()->getRow()
             );
             $this->sut->next();
         }

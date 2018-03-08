@@ -45,6 +45,15 @@ class LimitIterator implements \Iterator, Iterator
      */
     protected $results;
 
+    protected $rowClass;
+
+    /**
+     * LimitIterator constructor.
+     * @param \PDO $pdo
+     * @param $query
+     * @param int $blockSize
+     * @throws InvalidQueryException
+     */
     public function __construct(\PDO $pdo, $query, $blockSize = self::BLOCK_SIZE)
     {
         $this->assertValidQuery($query);
@@ -55,8 +64,18 @@ class LimitIterator implements \Iterator, Iterator
         $this->blockSize = $blockSize;
         $this->results = null;
         $this->rowCount = null;
+        $this->rowClass = null;
     }
 
+    public function setRowClass($rowClass)
+    {
+        $this->rowClass = $rowClass;
+    }
+
+    /**
+     * @param $query
+     * @throws InvalidQueryException
+     */
     protected function assertValidQuery($query)
     {
         if (!$this->isAValidSelect($query)) {
@@ -128,7 +147,14 @@ class LimitIterator implements \Iterator, Iterator
 
     public function current()
     {
-        return ($this->results[$this->currentBlockIndex]);
+        $rowdata = $this->results[$this->currentBlockIndex];
+        if ($this->rowClass) {
+            /** @var Row $row */
+            $row = new $this->rowClass();
+            $row->hydrate($rowdata);
+            return ($row);
+        }
+        return ($rowdata);
     }
 
     public function rewind()

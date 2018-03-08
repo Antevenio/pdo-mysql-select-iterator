@@ -1,7 +1,11 @@
 <?php
+namespace PdoMysqlSelectIterator\Test;
+
+use PDO;
 use PdoMysqlSelectIterator\LimitIterator;
-use PdoMysqlSelectIterator\NativePDOIterator;
+use PDOStatement;
 use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_MockObject_MockObject;
 
 class FactoryTest extends TestCase
 {
