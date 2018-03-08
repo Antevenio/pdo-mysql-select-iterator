@@ -21,6 +21,9 @@
             "PdoMysqlSelectIterator\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": { "PdoMysqlSelectIterator\\Test\\": "test/" }
+    },
     "require": {
         "php": ">=5.6"
     },

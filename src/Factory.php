@@ -7,6 +7,7 @@ class Factory {
      * @param $query
      * @param $blockSize
      * @return Iterator
+     * @throws Exception\InvalidQueryException
      */
     public function create(\PDO $adapter, $query, $blockSize)
     {
