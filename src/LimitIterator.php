@@ -161,6 +161,7 @@ class LimitIterator implements \Iterator, Iterator
     {
         $onFirstBlock = $this->onFirstBlock();
         $this->resetAbsoluteIndex();
+        $this->resetBlockIndex();
         if (!$this->blockLoaded() || !$onFirstBlock) {
             $this->loadNextBlock();
         }

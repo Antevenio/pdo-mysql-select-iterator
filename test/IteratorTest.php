@@ -173,6 +173,8 @@ class IteratorTest extends TestCase
         $this->assertEquals(0, $this->sut->key());
         $this->sut->next();
         $this->assertEquals(1, $this->sut->key());
+        $this->sut->next();
+        $this->assertEquals(2, $this->sut->key());
         $this->sut->rewind();
         $this->assertEquals(0, $this->sut->key());
     }
