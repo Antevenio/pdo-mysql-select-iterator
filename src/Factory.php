@@ -1,6 +1,8 @@
 <?php
 namespace PdoMysqlSelectIterator;
 
+use Predis\Client;
+
 class Factory {
     /**
      * @param \PDO $adapter
@@ -22,6 +24,11 @@ class Factory {
         /** @var Iterator $statement */
         $statement = $adapter->query($query);
         return $statement;
+    }
+
+    public function createRedis(\PDO $adapter, $query, Client $predisClient)
+    {
+        return new RedisIterator($adapter, $query, $predisClient, new UniqueIdGenerator());
     }
 
     protected function queryIsLimitable($query) {

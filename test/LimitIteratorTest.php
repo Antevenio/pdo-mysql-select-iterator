@@ -5,7 +5,7 @@ use PdoMysqlSelectIterator\LimitIterator;
 use PDOStatement;
 use PHPUnit\Framework\TestCase;
 
-class IteratorTest extends TestCase
+class LimitIteratorTest extends TestCase
 {
     const NOT_COUNTING = 0;
     const COUNTING = 1;
