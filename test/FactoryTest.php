@@ -33,7 +33,7 @@ class FactoryTest extends TestCase
             ["select * from foo", PDOStatement::class],
             ["select * from foo order by a", LimitIterator::class],
             ["select * from foo limit 100", PDOStatement::class],
-            ["select * from foo limit 100 order by a", PDOStatement::class],
+            ["select * from foo limit 100 order by a", LimitIterator::class],
             ["select a,rand() from foo order by a", PDOStatement::class]
         ];
     }

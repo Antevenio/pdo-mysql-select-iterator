@@ -32,14 +32,8 @@ class Factory {
     }
 
     protected function queryIsLimitable($query) {
-        return !$this->queryHasALimitClause($query)
-            && !$this->queryHasARandFunction($query)
+        return !$this->queryHasARandFunction($query)
             && $this->queryHasOrderByClause($query);
-    }
-
-    protected function queryHasALimitClause($query)
-    {
-        return (preg_match('/\s+LIMIT\s+/i', $query));
     }
 
     protected function queryHasARandFunction($query)
