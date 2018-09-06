@@ -77,6 +77,7 @@ class LimitIteratorTest extends TestCase
                 ->with($this->equalTo(\PDO::FETCH_ASSOC))
                 ->will($this->returnValue($returnedData));
         }
+
         if ($type == self::COUNTING) {
             $pdoStatement = $this->createMock(PDOStatement::class);
             $this->pdo->expects($this->at($j))
@@ -271,5 +272,94 @@ class LimitIteratorTest extends TestCase
         $this->pdo->expects($this->never())
             ->method("query");
         $this->assertEquals($numRows, $this->sut->count());
+    }
+
+    public function limitQueriesDataProvider()
+    {
+        return [
+            [
+                "SELECT * FROM TABLE LIMIT 7",
+                [
+                    [3, 0, self::DATA_BLOCKS[0]],
+                    [3, 3, self::DATA_BLOCKS[1]],
+                    [1, 6, self::DATA_BLOCKS[2]]
+                ]
+            ],
+            [
+                "SELECT * FROM TABLE LIMIT 1, 7",
+                [
+                    [3, 1, self::DATA_BLOCKS[0]],
+                    [3, 4, self::DATA_BLOCKS[1]],
+                    [1, 7, self::DATA_BLOCKS[2]]
+                ]
+            ],
+            [
+                "SELECT * FROM TABLE LIMIT 7 OFFSET 1",
+                [
+                    [3, 1, self::DATA_BLOCKS[0]],
+                    [3, 4, self::DATA_BLOCKS[1]],
+                    [1, 7, self::DATA_BLOCKS[2]]
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @param $query
+     * @param $queryParams
+     * @dataProvider limitQueriesDataProvider
+     * @throws \PdoMysqlSelectIterator\Exception\InvalidQueryException
+     */
+    public function testIteratingLimitQueriesShouldExcecuteProperQueries(
+        $query, $queryParams
+    )
+    {
+        $this->sut = new LimitIterator($this->pdo, $query, $this->blockSize);
+        $this->setPdoQueryExpectations($queryParams, self::NOT_COUNTING, 99);
+        $this->sut->rewind();
+        for ($i = 0; $i < 8; $i++) {
+            $this->assertEquals(
+                ["a" => "a".($i+1), "b" => "b".($i+1)], $this->sut->current()
+            );
+            $this->sut->next();
+        }
+    }
+
+    /**
+     * @param $query
+     * @param $queryParams
+     * @dataProvider limitQueriesDataProvider
+     * @throws \PdoMysqlSelectIterator\Exception\InvalidQueryException
+     */
+    public function testCountShouldReturnInitialLimitIfSetAndIsLowerThanRowCount(
+        $query, $queryParams
+    )
+    {
+        $returnedRowCount = 31;
+        $this->sut = new LimitIterator($this->pdo, $query, $this->blockSize);
+
+        $this->setPdoQueryExpectations(
+            array_slice($queryParams, 0, 1), self::COUNTING, $returnedRowCount
+        );
+        $this->assertEquals(7, $this->sut->count());
+    }
+
+    /**
+     * @param $query
+     * @param $queryParams
+     * @dataProvider limitQueriesDataProvider
+     * @throws \PdoMysqlSelectIterator\Exception\InvalidQueryException
+     */
+    public function testCountShouldReturnRowCountIfLowerThanInitialLimit(
+        $query, $queryParams
+    )
+    {
+        $returnedRowCount = 6;
+        $this->sut = new LimitIterator($this->pdo, $query, $this->blockSize);
+
+        $this->setPdoQueryExpectations(
+            array_slice($queryParams, 0, 1), self::COUNTING, $returnedRowCount
+        );
+        $this->assertEquals($returnedRowCount, $this->sut->count());
     }
 }

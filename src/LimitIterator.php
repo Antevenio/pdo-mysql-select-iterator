@@ -10,6 +10,8 @@ class LimitIterator implements \Iterator, Iterator
     const _NOT_COUNTING = 0;
     const _COUNTING = 1;
 
+    conSt _NO_INITIAL_LIMIT = -1;
+
     /**
      * @var \PDO
      */
@@ -19,6 +21,11 @@ class LimitIterator implements \Iterator, Iterator
      * @var string
      */
     protected $query;
+
+    /**
+     * @var string
+     */
+    protected $originalQuery;
 
     /**
      * @var int
@@ -47,6 +54,10 @@ class LimitIterator implements \Iterator, Iterator
 
     protected $rowClass;
 
+    protected $initialOffset;
+
+    protected $initialLimit;
+
     /**
      * LimitIterator constructor.
      * @param \PDO $pdo
@@ -60,11 +71,15 @@ class LimitIterator implements \Iterator, Iterator
         $this->resetAbsoluteIndex();
         $this->resetBlockIndex();
         $this->pdo = $pdo;
-        $this->query = $query;
         $this->blockSize = $blockSize;
         $this->results = null;
         $this->rowCount = null;
         $this->rowClass = null;
+        $this->initialOffset = 0;
+        $this->initialLimit = self::_NO_INITIAL_LIMIT;
+        $this->setupOffsetAndLimitFromQuery($query);
+        $this->originalQuery = $query;
+        $this->query = $this->stripLimitFromQuery($query);
     }
 
     public function setRowClass($rowClass)
@@ -87,7 +102,7 @@ class LimitIterator implements \Iterator, Iterator
 
     protected function isAValidSelect($query)
     {
-        return (preg_match('/^\s*SELECT\s+/i',$query));
+        return preg_match('/^\s*SELECT\s+/i',$query);
     }
 
     protected function resetAbsoluteIndex()
@@ -121,7 +136,7 @@ class LimitIterator implements \Iterator, Iterator
 
     protected function endOfBlockReached()
     {
-        return ($this->currentBlockIndex == ($this->blockSize));
+        return $this->currentBlockIndex == $this->blockSize;
     }
 
     protected function loadNextBlock($type = self::_NOT_COUNTING)
@@ -131,18 +146,43 @@ class LimitIterator implements \Iterator, Iterator
         $this->resetBlockIndex();
     }
 
+    protected function hasInitialLimit()
+    {
+        return $this->initialLimit != self::_NO_INITIAL_LIMIT;
+    }
+
+    protected function getCurrentBlockQueryLimit()
+    {
+
+        $blockSize = $this->blockSize;
+        if ($this->hasInitialLimit()) {
+            $remainingRows = $this->initialLimit - $this->absoluteIndex;
+            if ($remainingRows < $this->blockSize) {
+                $blockSize = $remainingRows;
+            }
+        }
+        return $blockSize;
+    }
+
+    protected function getCurrentBlockQueryOffset()
+    {
+        return $this->absoluteIndex + $this->initialOffset;
+    }
+
     protected function getCurrentBlockQuery($type = self::_COUNTING)
     {
-        $query = $this->query . " LIMIT " . $this->blockSize . " OFFSET " .  $this->absoluteIndex;
+        $query =
+            $this->query . " LIMIT " . $this->getCurrentBlockQueryLimit() . " OFFSET " .
+            $this->getCurrentBlockQueryOffset();
         if ($type == self::_COUNTING) {
             $query = preg_replace("/SELECT/i", "SELECT SQL_CALC_FOUND_ROWS", $query);
         }
-        return ($query);
+        return $query;
     }
 
     public function key()
     {
-        return ($this->absoluteIndex);
+        return $this->absoluteIndex;
     }
 
     public function current()
@@ -152,9 +192,9 @@ class LimitIterator implements \Iterator, Iterator
             /** @var Row $row */
             $row = new $this->rowClass();
             $row->hydrate($rowdata);
-            return ($row);
+            return $row;
         }
-        return ($rowdata);
+        return $rowdata;
     }
 
     public function rewind()
@@ -169,22 +209,32 @@ class LimitIterator implements \Iterator, Iterator
 
     protected function onFirstBlock()
     {
-        return ($this->absoluteIndex < $this->blockSize);
+        return $this->absoluteIndex < $this->blockSize;
     }
 
     protected function blockLoaded()
     {
-        return ($this->results != null);
+        return $this->results != null;
     }
 
     public function valid()
     {
-        return ($this->blockLoaded() && $this->currentRowExists());
+        return $this->blockLoaded() &&
+            $this->currentRowExists() &&
+            $this->isCurrentRowInsideLimits();
+    }
+
+    protected function isCurrentRowInsideLimits()
+    {
+        if ($this->initialLimit == self::_NO_INITIAL_LIMIT) {
+            return true;
+        }
+        return $this->absoluteIndex < $this->initialLimit;
     }
 
     protected function currentRowExists()
     {
-        return (isset($this->results[$this->currentBlockIndex]));
+        return isset($this->results[$this->currentBlockIndex]);
     }
 
     public function count()
@@ -193,12 +243,12 @@ class LimitIterator implements \Iterator, Iterator
             $this->loadNextBlock(self::_COUNTING);
             $this->loadCount();
         }
-        return ($this->rowCount);
+        return $this->rowCount;
     }
 
     protected function countDone()
     {
-        return ($this->rowCount !== null);
+        return $this->rowCount !== null;
     }
 
     protected function loadCount()
@@ -206,10 +256,41 @@ class LimitIterator implements \Iterator, Iterator
         $row = $this->pdo->query("SELECT FOUND_ROWS() AS FOUND_ROWS")
             ->fetch(\PDO::FETCH_ASSOC);
         $this->rowCount = $row['FOUND_ROWS'];
+
+        if ($this->initialLimit != self::_NO_INITIAL_LIMIT) {
+            $this->rowCount =
+                ($this->rowCount > $this->initialLimit) ?
+                $this->initialLimit :
+                $this->rowCount;
+        }
     }
 
     public function close()
     {
         $this->pdo = null;
+    }
+
+    protected function setupOffsetAndLimitFromQuery($query)
+    {
+        if (preg_match('/\s+LIMIT\s+(\d+)\s+OFFSET\s+(\d+)\s*/i', $query, $matches)) {
+            $this->initialLimit = $matches[1];
+            $this->initialOffset = $matches[2];
+            return;
+        }
+        if (preg_match('/\s+LIMIT\s+(\d+)\s*,\s*(\d+)\s*/i', $query, $matches))
+        {
+            $this->initialOffset = $matches[1];
+            $this->initialLimit = $matches[2];
+            return;
+        }
+        if (preg_match('/\s+LIMIT\s+(\d+)\s*/i', $query, $matches)) {
+            $this->initialLimit = $matches[1];
+            return;
+        }
+    }
+
+    protected function stripLimitFromQuery($query)
+    {
+        return preg_replace('/\s+LIMIT.*$/', '', $query);
     }
 }
