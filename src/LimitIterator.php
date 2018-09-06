@@ -219,17 +219,7 @@ class LimitIterator implements \Iterator, Iterator
 
     public function valid()
     {
-        return $this->blockLoaded() &&
-            $this->currentRowExists() &&
-            $this->isCurrentRowInsideLimits();
-    }
-
-    protected function isCurrentRowInsideLimits()
-    {
-        if ($this->initialLimit == self::_NO_INITIAL_LIMIT) {
-            return true;
-        }
-        return $this->absoluteIndex < $this->initialLimit;
+        return $this->blockLoaded() && $this->currentRowExists();
     }
 
     protected function currentRowExists()
