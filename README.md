@@ -51,7 +51,7 @@ The factory will only return a LimitIterator when:
 * The query has an "order by" clause
 * The query is not using any "rand()" functions
 
-If any of the previous conditions are met, the factory will return a non limit based iterator called 
+If any of the previous conditions are NOT met, the factory will return a non limit based iterator called 
 "NativePDOIterator". 
 
 To ensure consistency among results, you might want to get the whole iteration and count inside a database transaction.
