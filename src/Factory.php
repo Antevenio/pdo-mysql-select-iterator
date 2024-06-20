@@ -26,6 +26,11 @@ class Factory {
         return $statement;
     }
 
+    public function createIdBased(\PDO $adapter, $query, $blockSize)
+    {
+        return new IdBasedLimitIterator($adapter, $query, $blockSize);
+    }
+
     public function createRedis(\PDO $adapter, $query, Client $predisClient)
     {
         return new RedisIterator($adapter, $query, $predisClient, new UniqueIdGenerator());
