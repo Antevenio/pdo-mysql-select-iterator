@@ -11,6 +11,7 @@
     "keywords": ["mysql","pdo","select","limit","iterator"],
     "homepage": "https://github.com/Antevenio/pdo-mysql-select-iterator",
     "license": "MIT",
+    "minimum-stability": "dev",
     "config": {
         "platform": {
             "php": "5.6"
