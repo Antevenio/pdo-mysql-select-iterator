@@ -217,11 +217,11 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
         if ($type == self::_COUNTING) {
             $this->parsedQuery['SELECT'] = array_merge(
-                [
+                [[
                     'expr_type' => 'reserved',
                     'base_expr' => 'SQL_CALC_FOUND_ROWS',
                     'delim' => ' '
-                ],
+                ]],
                 $this->parsedQuery['SELECT']
             );
         }
@@ -236,7 +236,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
             $parsedQuery['WHERE'][] = [
                 'expr_type' => 'colref',
-                'base_expr' => $this->idField
+                'base_expr' => self::ID_FIELD_ALIAS
             ];
 
             $parsedQuery['WHERE'][] = [
