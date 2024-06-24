@@ -199,7 +199,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
     protected function loadNextBlock($type = self::_NOT_COUNTING)
     {
-        file_put_contents("/tmp/pin.txt", $this->getCurrentBlockQuery($type), FILE_APPEND);
+        file_put_contents("/tmp/pin.txt", $this->getCurrentBlockQuery($type) . "\n\n", FILE_APPEND);
         $this->results = $this->pdo->query($this->getCurrentBlockQuery($type))
             ->fetchAll(\PDO::FETCH_ASSOC);
         $this->resetBlockIndex();
