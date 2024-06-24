@@ -12,6 +12,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
     const _NOT_COUNTING = 0;
     const _COUNTING = 1;
+    const _NO_INITIAL_LIMIT = -1;
 
     /**
      * @var \PDO
@@ -55,6 +56,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
     protected $rowClass;
 
+    protected $initialLimit;
     protected $initialOffset;
 
     protected $idField;
@@ -78,6 +80,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $this->originalQuery = $query;
         $this->blockSize = $blockSize;
         $this->initialOffset = 0;
+        $this->initialLimit = self::_NO_INITIAL_LIMIT;
         $this->resetAbsoluteIndex();
         $this->resetBlockIndex();
         $this->pdo = $pdo;
@@ -94,10 +97,10 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $this->idField = $this->parsedQuery['ORDER'][0]['base_expr'];
         $this->orderDirection = $this->parsedQuery['ORDER'][0]['direction'];
 
-        $this->parsedQuery['LIMIT'] = [
-            'offset' => strval(0),
-            'rowcount' => strval($this->getCurrentBlockQueryLimit())
-        ];
+        if (isset($this->parsedQuery['LIMIT'])) {
+            $this->initialOffset = $this->parsedQuery['LIMIT']['offset'];
+            $this->initialLimit = $this->parsedQuery['LIMIT']['rowcount'];
+        }
 
         $this->parsedQuery['SELECT'][count($this->parsedQuery['SELECT']) - 1]['delim'] = ',';
 
@@ -137,11 +140,6 @@ class IdBasedLimitIterator implements \Iterator, Iterator
                 "The query provided has multiple fields in the order clause"
             );
         }
-        if ($this->hasLimitClause()) {
-            throw new InvalidQueryException(
-                "The query provided already have a LIMIT clause"
-            );
-        }
     }
 
     protected function orderByClauseHasJustOneColumn($query)
@@ -157,11 +155,6 @@ class IdBasedLimitIterator implements \Iterator, Iterator
     protected function hasOrderByClause()
     {
         return isset($this->parsedQuery['ORDER']);
-    }
-
-    protected function hasLimitClause()
-    {
-        return isset($this->parsedQuery['LIMIT']);
     }
 
     protected function resetAbsoluteIndex()
@@ -209,7 +202,18 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
     protected function getCurrentBlockQueryLimit()
     {
+        if ($this->hasInitialLimit()) {
+            $remainingRows = $this->initialLimit - $this->absoluteIndex;
+            if ($remainingRows < $this->blockSize) {
+                return $remainingRows;
+            }
+        }
         return $this->blockSize;
+    }
+
+    protected function getCurrentBlockQueryOffset()
+    {
+        return $this->initialOffset ?: 0;
     }
 
     protected function getCurrentBlockQuery($type = self::_COUNTING)
@@ -226,6 +230,11 @@ class IdBasedLimitIterator implements \Iterator, Iterator
                 $this->parsedQuery['SELECT']
             );
         }
+
+        $this->parsedQuery['LIMIT'] = [
+            'offset' => $this->getCurrentBlockQueryOffset(),
+            'rowcount' => $this->getCurrentBlockQueryLimit()
+        ];
 
         if ($this->lastIdValue) {
             if (isset($parsedQuery['WHERE'])) {
@@ -322,6 +331,18 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $row = $this->pdo->query("SELECT FOUND_ROWS() AS FOUND_ROWS")
             ->fetch(\PDO::FETCH_ASSOC);
         $this->rowCount = $row['FOUND_ROWS'];
+
+        if ($this->initialLimit != self::_NO_INITIAL_LIMIT) {
+            $this->rowCount =
+                ($this->rowCount > $this->initialLimit) ?
+                    $this->initialLimit :
+                    $this->rowCount;
+        }
+    }
+
+    protected function hasInitialLimit()
+    {
+        return $this->initialLimit != self::_NO_INITIAL_LIMIT;
     }
 
     public function close()
