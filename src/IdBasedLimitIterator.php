@@ -7,6 +7,7 @@ use PHPSQLParser\PHPSQLParser;
 
 class IdBasedLimitIterator implements \Iterator, Iterator
 {
+    const ID_FIELD_ALIAS = '__iterator_id__';
     const BLOCK_SIZE = 1000;
 
     const _NOT_COUNTING = 0;
@@ -186,7 +187,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $this->results = $this->pdo->query($this->getCurrentBlockQuery($type))
             ->fetchAll(\PDO::FETCH_ASSOC);
         $this->resetBlockIndex();
-        $this->lastIdValue = $this->results[count($this->results)-1][$this->idField];
+        $this->lastIdValue = $this->results[count($this->results)-1][self::ID_FIELD_ALIAS];
     }
 
     protected function getCurrentBlockQueryLimit()
@@ -229,11 +230,22 @@ class IdBasedLimitIterator implements \Iterator, Iterator
             'rowcount' => $this->getCurrentBlockQueryLimit()
         ];
 
+        $parsedQuery['SELECT'][count($parsedQuery['SELECT']) - 1]['delim'] = ',';
+
+        $parsedQuery['SELECT'][] = [
+            'expr_type' => 'colref',
+            'base_expr' => $this->idField,
+            'alias' => [
+                'name' => self::ID_FIELD_ALIAS
+            ]
+        ];
+
         if ($type == self::_COUNTING) {
             $parsedQuery['SELECT'] = array_merge(
                 [
                     'expr_type' => 'reserved',
-                    'base_expr' => 'SQL_CALC_FOUND_ROWS'
+                    'base_expr' => 'SQL_CALC_FOUND_ROWS',
+                    'delim' => ' '
                 ],
                 $parsedQuery['SELECT']
             );
@@ -250,6 +262,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
     public function current()
     {
         $rowdata = $this->results[$this->currentBlockIndex];
+        unset($rowdata[self::ID_FIELD_ALIAS]);
         if ($this->rowClass) {
             /** @var Row $row */
             $row = new $this->rowClass();
