@@ -93,6 +93,21 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $this->assertValidQuery();
         $this->idField = $this->parsedQuery['ORDER'][0]['base_expr'];
         $this->orderDirection = $this->parsedQuery['ORDER'][0]['direction'];
+
+        $this->parsedQuery['LIMIT'] = [
+            'offset' => 0,
+            'rowcount' => $this->getCurrentBlockQueryLimit()
+        ];
+
+        $this->parsedQuery['SELECT'][count($this->parsedQuery['SELECT']) - 1]['delim'] = ',';
+
+        $this->parsedQuery['SELECT'][] = [
+            'expr_type' => 'colref',
+            'base_expr' => $this->idField,
+            'alias' => [
+                'name' => self::ID_FIELD_ALIAS
+            ]
+        ];
     }
 
     public function setRowClass($rowClass)
@@ -184,6 +199,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
     protected function loadNextBlock($type = self::_NOT_COUNTING)
     {
+        file_put_contents("/tmp/pin.txt", $this->getCurrentBlockQuery($type), FILE_APPEND);
         $this->results = $this->pdo->query($this->getCurrentBlockQuery($type))
             ->fetchAll(\PDO::FETCH_ASSOC);
         $this->resetBlockIndex();
@@ -197,58 +213,41 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
     protected function getCurrentBlockQuery($type = self::_COUNTING)
     {
-        if (!$this->lastIdValue) {
-            return $this->query;
-        }
-
         $parsedQuery = $this->parsedQuery;
 
-        if (isset($parsedQuery['WHERE'])) {
-            $parsedQuery['WHERE'][] = [
-                'expr_type' => 'operator',
-                'base_expr' => 'and'
-            ];
-        }
-
-        $parsedQuery['WHERE'][] = [
-            'expr_type' => 'colref',
-            'base_expr' => $this->idField
-        ];
-
-        $parsedQuery['WHERE'][] = [
-            'expr_type' => 'operator',
-            'base_expr' => $this->orderDirection == 'DESC' ? '<' : '>'
-        ];
-
-        $parsedQuery['WHERE'][] = [
-            'expr_type' => 'const',
-            'base_expr' => $this->lastIdValue
-        ];
-
-        $parsedQuery['LIMIT'] = [
-            'offset' => 0,
-            'rowcount' => $this->getCurrentBlockQueryLimit()
-        ];
-
-        $parsedQuery['SELECT'][count($parsedQuery['SELECT']) - 1]['delim'] = ',';
-
-        $parsedQuery['SELECT'][] = [
-            'expr_type' => 'colref',
-            'base_expr' => $this->idField,
-            'alias' => [
-                'name' => self::ID_FIELD_ALIAS
-            ]
-        ];
-
         if ($type == self::_COUNTING) {
-            $parsedQuery['SELECT'] = array_merge(
+            $this->parsedQuery['SELECT'] = array_merge(
                 [
                     'expr_type' => 'reserved',
                     'base_expr' => 'SQL_CALC_FOUND_ROWS',
                     'delim' => ' '
                 ],
-                $parsedQuery['SELECT']
+                $this->parsedQuery['SELECT']
             );
+        }
+
+        if ($this->lastIdValue) {
+            if (isset($parsedQuery['WHERE'])) {
+                $parsedQuery['WHERE'][] = [
+                    'expr_type' => 'operator',
+                    'base_expr' => 'and'
+                ];
+            }
+
+            $parsedQuery['WHERE'][] = [
+                'expr_type' => 'colref',
+                'base_expr' => $this->idField
+            ];
+
+            $parsedQuery['WHERE'][] = [
+                'expr_type' => 'operator',
+                'base_expr' => $this->orderDirection == 'DESC' ? '<' : '>'
+            ];
+
+            $parsedQuery['WHERE'][] = [
+                'expr_type' => 'const',
+                'base_expr' => $this->lastIdValue
+            ];
         }
 
         return (new PHPSQLCreator())->create($parsedQuery);
