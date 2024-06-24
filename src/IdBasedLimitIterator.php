@@ -76,15 +76,15 @@ class IdBasedLimitIterator implements \Iterator, Iterator
     {
         $this->query = $query;
         $this->originalQuery = $query;
-        $this->parseQuery();
+        $this->blockSize = $blockSize;
+        $this->initialOffset = 0;
         $this->resetAbsoluteIndex();
         $this->resetBlockIndex();
         $this->pdo = $pdo;
-        $this->blockSize = $blockSize;
+        $this->parseQuery();
         $this->results = null;
         $this->rowCount = null;
         $this->rowClass = null;
-        $this->initialOffset = 0;
     }
 
     protected function parseQuery()
@@ -95,8 +95,8 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $this->orderDirection = $this->parsedQuery['ORDER'][0]['direction'];
 
         $this->parsedQuery['LIMIT'] = [
-            'offset' => 0,
-            'rowcount' => $this->getCurrentBlockQueryLimit()
+            'offset' => strval(0),
+            'rowcount' => strval($this->getCurrentBlockQueryLimit())
         ];
 
         $this->parsedQuery['SELECT'][count($this->parsedQuery['SELECT']) - 1]['delim'] = ',';
