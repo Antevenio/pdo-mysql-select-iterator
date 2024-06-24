@@ -237,7 +237,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
             $parsedQuery['WHERE'][] = [
                 'expr_type' => 'colref',
-                'base_expr' => self::ID_FIELD_ALIAS
+                'base_expr' => $this->idField
             ];
 
             $parsedQuery['WHERE'][] = [
