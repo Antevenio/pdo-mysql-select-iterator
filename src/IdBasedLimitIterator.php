@@ -105,6 +105,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
             'expr_type' => 'colref',
             'base_expr' => $this->idField,
             'alias' => [
+                'as' => true,
                 'name' => self::ID_FIELD_ALIAS
             ]
         ];
