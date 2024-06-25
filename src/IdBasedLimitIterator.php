@@ -221,13 +221,13 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $parsedQuery = $this->parsedQuery;
 
         if ($type == self::_COUNTING) {
-            $this->parsedQuery['SELECT'] = array_merge(
+            $parsedQuery['SELECT'] = array_merge(
                 [[
                     'expr_type' => 'reserved',
                     'base_expr' => 'SQL_CALC_FOUND_ROWS',
                     'delim' => ' '
                 ]],
-                $this->parsedQuery['SELECT']
+                $parsedQuery['SELECT']
             );
         }
 
