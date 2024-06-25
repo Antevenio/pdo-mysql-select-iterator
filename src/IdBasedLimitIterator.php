@@ -197,6 +197,12 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $this->results = $this->pdo->query($this->getCurrentBlockQuery($type))
             ->fetchAll(\PDO::FETCH_ASSOC);
         $this->resetBlockIndex();
+
+        if (count($this->results) === 0) {
+            $this->lastIdValue = null;
+            return;
+        }
+
         $this->lastIdValue = $this->results[count($this->results)-1][self::ID_FIELD_ALIAS];
         if ($this->lastIdValue === null) {
             throw new InvalidQueryException("found null id values while exececuting the query!");
