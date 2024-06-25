@@ -142,7 +142,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         }
     }
 
-    protected function orderByClauseHasJustOneColumn($query)
+    protected function orderByClauseHasJustOneColumn()
     {
         return (isset($this->parsedQuery['ORDER']) && count($this->parsedQuery['ORDER']) == 1);
     }
@@ -198,6 +198,9 @@ class IdBasedLimitIterator implements \Iterator, Iterator
             ->fetchAll(\PDO::FETCH_ASSOC);
         $this->resetBlockIndex();
         $this->lastIdValue = $this->results[count($this->results)-1][self::ID_FIELD_ALIAS];
+        if ($this->lastIdValue === null) {
+            throw new InvalidQueryException("found null id values while exececuting the query!");
+        }
     }
 
     protected function getCurrentBlockQueryLimit()
@@ -256,7 +259,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
             $parsedQuery['WHERE'][] = [
                 'expr_type' => 'const',
-                'base_expr' => $this->lastIdValue
+                'base_expr' => "'" . $this->lastIdValue . "'"
             ];
         }
 
