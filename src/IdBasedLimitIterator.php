@@ -95,6 +95,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
         $this->parsedQuery = (new PHPSQLParser())->parse($this->query);
         $this->assertValidQuery();
         $this->idField = $this->parsedQuery['ORDER'][0]['base_expr'];
+        $this->idField = $this->findUnaliasedColumnName($this->idField);
         $this->orderDirection = $this->parsedQuery['ORDER'][0]['direction'];
 
         if (isset($this->parsedQuery['LIMIT'])) {
@@ -112,6 +113,17 @@ class IdBasedLimitIterator implements \Iterator, Iterator
                 'name' => self::ID_FIELD_ALIAS
             ]
         ];
+    }
+
+    private function findUnaliasedColumnName($name)
+    {
+        foreach ($this->parsedQuery['SELECT'] as $column) {
+            if (strtolower($column['alias']) === strtolower($name)) {
+                return $column['base_expr'];
+            }
+        }
+
+        return $name;
     }
 
     public function setRowClass($rowClass)
@@ -193,7 +205,6 @@ class IdBasedLimitIterator implements \Iterator, Iterator
 
     protected function loadNextBlock($type = self::_NOT_COUNTING)
     {
-        file_put_contents("/tmp/pin.txt", $this->getCurrentBlockQuery($type) . "\n\n", FILE_APPEND);
         $this->results = $this->pdo->query($this->getCurrentBlockQuery($type))
             ->fetchAll(\PDO::FETCH_ASSOC);
         $this->resetBlockIndex();
