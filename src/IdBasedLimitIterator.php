@@ -118,7 +118,11 @@ class IdBasedLimitIterator implements \Iterator, Iterator
     private function findUnaliasedColumnName($name)
     {
         foreach ($this->parsedQuery['SELECT'] as $column) {
-            if (strtolower($column['alias']) === strtolower($name)) {
+            if (
+                isset($column['alias']) &&
+                is_array($column['alias']) &&
+                strtolower($column['alias']['name']) === strtolower($name)
+            ) {
                 return $column['base_expr'];
             }
         }
