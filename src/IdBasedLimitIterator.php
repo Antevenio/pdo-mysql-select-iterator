@@ -255,7 +255,7 @@ class IdBasedLimitIterator implements \Iterator, Iterator
             );
         }
 
-        $this->parsedQuery['LIMIT'] = [
+        $parsedQuery['LIMIT'] = [
             'offset' => $this->getCurrentBlockQueryOffset(),
             'rowcount' => $this->getCurrentBlockQueryLimit()
         ];
