@@ -80,7 +80,7 @@ class LimitIterator implements \Iterator, Iterator
         $this->setupOffsetAndLimitFromQuery($query);
         $this->originalQuery = $query;
         $this->query = $this->stripTrailingSemicolonsFromQuery($query);
-        $this->query = $this->stripLimitFromQuery($query);
+        $this->query = $this->stripLimitFromQuery($this->query);
     }
 
     public function setRowClass($rowClass)
