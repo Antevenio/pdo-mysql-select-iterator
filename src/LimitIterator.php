@@ -79,6 +79,7 @@ class LimitIterator implements \Iterator, Iterator
         $this->initialLimit = self::_NO_INITIAL_LIMIT;
         $this->setupOffsetAndLimitFromQuery($query);
         $this->originalQuery = $query;
+        $this->query = $this->stripTrailingSemicolonsFromQuery($query);
         $this->query = $this->stripLimitFromQuery($query);
     }
 
@@ -282,5 +283,10 @@ class LimitIterator implements \Iterator, Iterator
     protected function stripLimitFromQuery($query)
     {
         return preg_replace('/\s+LIMIT.*$/', '', $query);
+    }
+
+    protected function stripTrailingSemicolonsFromQuery($query)
+    {
+        return preg_replace('/;+$/', '', $query);
     }
 }
