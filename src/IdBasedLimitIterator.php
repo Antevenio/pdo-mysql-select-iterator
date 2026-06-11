@@ -308,12 +308,9 @@ class IdBasedLimitIterator implements \Iterator, Iterator
     public function rewind()
     {
         $this->lastIdValue = null;
-        $onFirstBlock = $this->onFirstBlock();
         $this->resetAbsoluteIndex();
         $this->resetBlockIndex();
-        if (!$this->blockLoaded() || !$onFirstBlock) {
-            $this->loadNextBlock();
-        }
+        $this->loadNextBlock();
     }
 
     protected function onFirstBlock()
